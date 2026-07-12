@@ -5,8 +5,8 @@ pub(crate) const PROFILER_PROVIDER_GATEWAY_ID: &str = "engine.profiler.starprofi
 pub(crate) const PROFILER_SERVICE_ID: &str = "profiler.api";
 pub(crate) const PROFILER_BACKEND_CAPABILITY_ID: &str = "profiler.backend";
 
-pub(crate) const ENGINE_JOBS_GATEWAY_ID: &str = "engine.jobs";
-pub(crate) const JOBS_INVOKE_SERVICE_V1: &str = "job.invoke_service_v1";
+pub(crate) const ENGINE_THREADING_GATEWAY_ID: &str = "engine.threading";
+pub(crate) const TASK_INVOKE_SERVICE_V1: &str = "task.invoke_service_v1";
 
 pub(crate) const METHOD_INFO_JSON: &str = "info_json";
 pub(crate) const METHOD_JOB_BEGIN_JSON_V1: &str = "profiler.job_begin_json_v1";
@@ -24,7 +24,7 @@ pub(crate) const TOPIC_JOB_BEGIN: &str = "newengine.diagnostics.job.begin.v1";
 pub(crate) const TOPIC_JOB_END: &str = "newengine.diagnostics.job.end.v1";
 pub(crate) const TOPIC_JOB_STATUS: &str = "newengine.diagnostics.job.status.v1";
 pub(crate) const TOPIC_ENGINE_TASK_EVENT: &str = "engine.task.event.v1";
-pub(crate) const TOPIC_ENGINE_JOB_EVENT: &str = "engine.jobs.event.v1";
+pub(crate) const TOPIC_ENGINE_TASK_ENVELOPE: &str = "engine.threading.event.v1";
 
 pub(crate) const CT_JSON: &str = "application/json";
 pub(crate) const CT_JSON_MERGE_PATCH: &str = "application/merge-patch+json";

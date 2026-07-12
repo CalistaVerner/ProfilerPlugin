@@ -54,17 +54,17 @@ The plugin uses existing host surfaces:
 
 - `HostApiV1.register_service_v1` to expose the profiler service.
 - `HostApiV1.subscribe_events_v1` to receive task/job events.
-- `HostApiV1.call_service_v1(engine.jobs, job.invoke_service_v1, ...)` to execute heavy report build/write work on the engine.jobs provider path.
+- `HostApiV1.call_service_v1(engine.threading, job.invoke_service_v1, ...)` to execute heavy report build/write work on the engine.threading provider path.
 - Standard service calls to `engine.profiler` / `profiler.api` for explicit instrumentation.
 - Host-emitted generic diagnostics job events for plugin lifecycle operations and service calls.
 
-The profiler must never hide expensive work behind an untracked background thread. By default, report flushing is accepted only when it can be scheduled as a visible `engine.jobs` job; there is no profiler-owned background fallback.
+The profiler must never hide expensive work behind an untracked background thread. By default, report flushing is accepted only when it can be scheduled as a visible `engine.threading` job; there is no profiler-owned background fallback.
 
 ## Event topics
 
 ```text
 engine.task.event.v1
-engine.jobs.event.v1
+engine.threading.event.v1
 newengine.diagnostics.job.begin.v1
 newengine.diagnostics.job.end.v1
 newengine.diagnostics.job.status.v1
@@ -105,9 +105,9 @@ Default scheduling configuration:
 
 Method behavior:
 
-- `profiler.flush_report_v1` uses `scheduling.service_flush_mode`; by default it calls `engine.jobs/job.invoke_service_v1`, which schedules `profiler.flush_report_sync_v1` on an engine.jobs worker.
+- `profiler.flush_report_v1` uses `scheduling.service_flush_mode`; by default it calls `engine.threading/job.invoke_service_v1`, which schedules `profiler.flush_report_sync_v1` on an engine.threading worker.
 - `profiler.flush_report_async_v1` explicitly schedules a visible profiler flush job through `job.invoke_service_v1`; it does not create plugin-owned background threads.
-- `profiler.flush_report_sync_v1` is the synchronous worker entrypoint used by `engine.jobs` or by the final shutdown flush.
+- `profiler.flush_report_sync_v1` is the synchronous worker entrypoint used by `engine.threading` or by the final shutdown flush.
 - `profiler.flush_status_json_v1` reports scheduled/in-progress/failed flushes and recent scheduling diagnostics.
 
 Heavy report serialization, CSV generation, Markdown generation, file writes and ZIP creation run inside the engine job worker after a short profiler state snapshot. The runtime state lock is held only while copying the profiler state and while committing the final result paths/counters.
@@ -165,7 +165,7 @@ Start at **Quick answer — who ate my cookies**. It points to the grouped offen
 
 1. **Profiler-first telemetry view** — answers the production questions: what was scheduled, blocked, polling, waiting on GPU, over frame budget, or still async.
 2. **Load chart — summary time chart** — high-level domain split.
-3. **Load chart — lanes** — `engine.jobs` lane split, including `Simulation`, `RenderPrep`, `Streaming`, `AssetIo`, `Plugin`, `Background` or provider-defined lanes.
+3. **Load chart — lanes** — `engine.threading` lane split, including `Simulation`, `RenderPrep`, `Streaming`, `AssetIo`, `Plugin`, `Background` or provider-defined lanes.
 4. **Load chart — top offenders** — grouped suspect chart by service/plugin/method/name.
 5. **Top offenders by total elapsed time** — best table for answering who consumed the captured processor time.
 6. **Top methods by total elapsed time** — which service method accumulated the most captured time.
@@ -199,7 +199,7 @@ wait_reason
 async_mode
 ```
 
-These fields are intentionally domain-neutral. They let the profiler correlate `engine.jobs`, render frame envelopes, asset decode, texture upload, shader compile, streaming residency and world chunk budgets without importing renderer/assets/streaming internals.
+These fields are intentionally domain-neutral. They let the profiler correlate `engine.threading`, render frame envelopes, asset decode, texture upload, shader compile, streaming residency and world chunk budgets without importing renderer/assets/streaming internals.
 
 The profiler does not claim OS-level sampled CPU cycles. It identifies CPU-time suspects inside instrumented engine/plugin work. If a subsystem is not instrumented with job begin/end/status events, it will not appear as a time consumer.
 
@@ -259,3 +259,23 @@ flush_requests
 ```
 
 This is the same analysis data used by the Markdown report and CSV exports.
+
+<!-- NORTHSTAR-DIR-README:BEGIN -->
+
+## Directory purpose
+
+**Path:** `PluginsSrc/ProfilerPlugin`
+
+**Role:** First-party provider/plugin source root for `ProfilerPlugin`. Build output should go to explicit runtime/deploy locations, not be treated as source.
+
+**Local contents:** 3 direct subdirectories, 12 direct files.
+
+**Direct file examples:** `.gitignore`, `build.bat`, `buildDebug.bat`, `buildDev.bat`, `buildRelease.bat`, `Cargo.lock`, `Cargo.toml`, `engine-profiler-starprofiler-0.2.1-debug.dll`
+
+## Working rules
+
+- Do not put transient build output in this directory unless the directory is explicitly a runtime output/cache location.
+- Keep runtime assets and editable source assets separate: source assets are packed into runtime formats through explicit tools/manifests.
+- Do not introduce hidden provider/backend coupling here; use declared descriptors, gateways, DTOs, and explicit maintenance scripts.
+
+<!-- NORTHSTAR-DIR-README:END -->

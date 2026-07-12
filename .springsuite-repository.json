@@ -1,0 +1,44 @@
+{
+  "schema" : "com.takesome.springsuite.repository.v1",
+  "generatedAt" : "2026-07-01T07:35:39.116890700Z",
+  "repository" : {
+    "name" : "ProfilerPlugin",
+    "rootPath" : "C:\\Users\\Aiden\\Documents\\Repos\\NorthStar\\PluginsSrc\\ProfilerPlugin",
+    "gitDirectory" : "C:\\Users\\Aiden\\Documents\\Repos\\NorthStar\\PluginsSrc\\ProfilerPlugin\\.git",
+    "descriptorPath" : "C:\\Users\\Aiden\\Documents\\Repos\\NorthStar\\PluginsSrc\\ProfilerPlugin\\.springsuite-repository.json",
+    "descriptorFile" : ".springsuite-repository.json",
+    "suiteVersion" : "0.1.6"
+  },
+  "dataset" : {
+    "roots" : [ "src/main/java", "src/main/resources", "docs", "suite-*/src/main/java", "suite-*/src/main/resources" ],
+    "examples" : [ "docs", "suite-dashboard-module/src/main/java", "suite-diagnostics-module/src/main/java", "suite-cloudflared-module/src/main/java" ],
+    "analysisTargets" : [ "architecture", "module-boundaries", "package-structure", "public-api-surface", "runtime-configuration", "build-graph" ],
+    "excludeGlobs" : [ ".git/**", ".gradle/**", ".idea/**", "build/**", "**/build/**", "out/**", "target/**", "node_modules/**", ".springsuite/cloudflared/**" ]
+  },
+  "analysis" : {
+    "primaryLanguage" : "Java",
+    "buildTool" : "Gradle",
+    "javaVersion" : "17",
+    "compileCommand" : "gradlew.bat compileJava",
+    "testCommand" : "gradlew.bat test",
+    "moduleDeploymentCommand" : "gradlew.bat deploySignedModules",
+    "preferredReportFormat" : "markdown"
+  },
+  "workspace" : {
+    "activeProfile" : "",
+    "safeRoots" : [ "C:\\Users\\Aiden\\Documents\\Take Some\\NorthStar-Suite-V3", "C:\\Users\\Aiden\\Documents\\Repos" ],
+    "repositoryRoot" : "C:\\Users\\Aiden\\Documents\\Repos\\NorthStar\\PluginsSrc\\ProfilerPlugin",
+    "localRuntimeDirectory" : ".springsuite"
+  },
+  "repositoryCache" : {
+    "enabled" : true,
+    "cachePath" : "C:\\Users\\Aiden\\Documents\\Take Some\\NorthStar-Suite-V3\\.springsuite\\repositories.json",
+    "rememberDiscovered" : true,
+    "configuredRoots" : [ ]
+  },
+  "moduleExtraction" : {
+    "systemLayer" : [ "suite-core", "suite-config", "suite-logging", "suite-module", "suite-command", "suite-agent", "suite-workspace", "suite-toolbelt" ],
+    "featureModules" : [ "suite-dashboard-module", "suite-diagnostics-module", "suite-cloudflared-module" ],
+    "nextSteps" : [ "Add web-extension SPI for REST controllers in external signed SuiteModule jars", "Move suite-cloudflared-module from direct app dependency into signed runtime module deployment", "Keep cloudflared runtime cache under .springsuite/cloudflared" ]
+  }
+}
