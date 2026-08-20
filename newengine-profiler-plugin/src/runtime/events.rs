@@ -6,12 +6,15 @@ impl ProfilerRuntime {
             return;
         }
 
-        let mut state = self.lock_state();
-        state.events_seen = state.events_seen.saturating_add(1);
-
+        // JSON decoding is pure work and can be noticeably more expensive than the
+        // state mutation itself. Never hold the global profiler mutex while parsing
+        // high-frequency engine events; otherwise unrelated producer threads serialize
+        // behind serde and the profiler becomes a source of frame-time variance.
         let parsed = match serde_json::from_slice::<Value>(payload) {
             Ok(v) => v,
             Err(e) => {
+                let mut state = self.lock_state();
+                state.events_seen = state.events_seen.saturating_add(1);
                 state.malformed_events = state.malformed_events.saturating_add(1);
                 Self::push_diag_locked(
                     &self.cfg,
@@ -29,12 +32,12 @@ impl ProfilerRuntime {
             .get("category")
             .and_then(Value::as_str)
             .unwrap_or_default();
+        let capture = self.capture_topic(topic, category);
+        let ignored_self = self.cfg.ignore_self && self.is_self_event(&parsed);
 
-        if !self.capture_topic(topic, category) {
-            return;
-        }
-
-        if self.cfg.ignore_self && self.is_self_event(&parsed) {
+        let mut state = self.lock_state();
+        state.events_seen = state.events_seen.saturating_add(1);
+        if !capture || ignored_self {
             return;
         }
 

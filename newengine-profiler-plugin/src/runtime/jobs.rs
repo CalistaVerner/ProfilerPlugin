@@ -615,7 +615,18 @@ impl ProfilerRuntime {
 
         state.completed.push_back(record);
         while state.completed.len() > self.cfg.diagnostics.max_recent_jobs {
-            state.completed.pop_front();
+            // Preserve rare stalls/failures when the bounded ring is flooded by
+            // thousands of healthy simulation samples. Prefer evicting the oldest
+            // ordinary record; only evict an outlier if the entire ring consists of
+            // significant records. This keeps micro-freezes visible in the final report
+            // without increasing the configured memory bound.
+            if let Some(index) = state.completed.iter().position(|job| {
+                !is_significant_completed_job(job, self.cfg.diagnostics.slow_job_warn_ms)
+            }) {
+                let _ = state.completed.remove(index);
+            } else {
+                state.completed.pop_front();
+            }
         }
     }
 
@@ -629,4 +640,14 @@ impl ProfilerRuntime {
         }
         .max(0.001)
     }
+}
+
+#[inline]
+fn is_significant_completed_job(job: &JobRecord, slow_job_warn_ms: f64) -> bool {
+    job.status == "failed"
+        || job.elapsed_ms.unwrap_or_default() >= slow_job_warn_ms
+        || job.load.unwrap_or_default() >= 1.0
+        || job.exceeded_frame_budget
+        || job.waited_on_gpu
+        || job.gpu_wait_ms.unwrap_or_default() > 0.0
 }
