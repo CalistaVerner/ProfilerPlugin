@@ -23,6 +23,7 @@ use newengine_plugin_api::{
 use crate::constants::{PROFILER_PLUGIN_ID, PROFILER_PLUGIN_NAME};
 use crate::plugin::ProfilerPlugin;
 
+newengine_plugin_api::export_newengine_plugin_descriptor_v2!(crate::plugin::descriptor_v2);
 export_plugin_root!(create_module, ui_assets_v1);
 
 extern "C" fn create_module() -> PluginModuleDyn<'static> {

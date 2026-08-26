@@ -12,6 +12,10 @@ use std::sync::Arc;
 #[path = "plugin_definition.rs"]
 mod plugin_definition;
 
+pub(crate) fn descriptor_v2() -> newengine_plugin_api::PluginDescriptorV2 {
+    plugin_definition::descriptor_v2()
+}
+
 use crate::config::ProfilerConfig;
 use crate::constants::*;
 use crate::runtime::{ProfilerRuntime, RUNTIME};
