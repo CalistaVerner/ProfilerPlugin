@@ -1,7 +1,7 @@
 #![forbid(unsafe_op_in_unsafe_fn)]
 
-use newengine_plugin_api::{BackendServiceSpec, CapabilityKind, CapabilityRole};
 use newengine_plugin_api::prelude::*;
+use newengine_plugin_api::{BackendServiceSpec, CapabilityKind, CapabilityRole};
 
 use crate::constants::{
     ENGINE_PROFILER_GATEWAY_ID, PROFILER_BACKEND_CAPABILITY_ID, PROFILER_PLUGIN_ID,
@@ -13,9 +13,11 @@ const HOST_EVENTS_REQUIREMENT_JSON: &str = r#"{"schema":"newengine.profiler.even
 
 const JOB_SCHEDULER_REQUIREMENT_JSON: &str = r#"{"schema":"newengine.profiler.job_scheduler_requirement.v1","gateway":"engine.threading","methods":["job.invoke_service_v1","job.start_v1","job.progress_event_v1","job.status_json_v1"],"purpose":"execute profiler report build/write work on engine.threading provider workers instead of hidden plugin background load"}"#;
 
-const PROFILER_SERVICES: &[PluginServiceDefinition] = &[
-    plugin_service(PROFILER_SERVICE_ID, 1, SERVICE_DESCRIPTION_JSON),
-];
+const PROFILER_SERVICES: &[PluginServiceDefinition] = &[plugin_service(
+    PROFILER_SERVICE_ID,
+    1,
+    SERVICE_DESCRIPTION_JSON,
+)];
 
 const PROFILER_BACKEND_ROUTES: &[PluginBackendRouteDefinition] = &[optional_backend_route(
     PROFILER_BACKEND_CAPABILITY_ID,

@@ -73,8 +73,6 @@ pub(crate) fn unix_ms() -> u128 {
         .as_millis()
 }
 
-
-
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct UtcDateTimeParts {
     pub(crate) year: i32,
@@ -103,12 +101,9 @@ pub(crate) fn utc_stamp_from_unix_ms(value: u128) -> String {
 pub(crate) fn zip_dos_datetime_from_unix_ms(value: u128) -> (u16, u16) {
     let parts = utc_datetime_parts_from_unix_ms(value);
     let year = parts.year.clamp(1980, 2107) as u16;
-    let dos_time = ((parts.hour as u16) << 11)
-        | ((parts.minute as u16) << 5)
-        | ((parts.second as u16) / 2);
-    let dos_date = ((year - 1980) << 9)
-        | ((parts.month as u16) << 5)
-        | (parts.day as u16);
+    let dos_time =
+        ((parts.hour as u16) << 11) | ((parts.minute as u16) << 5) | ((parts.second as u16) / 2);
+    let dos_date = ((year - 1980) << 9) | ((parts.month as u16) << 5) | (parts.day as u16);
     (dos_time, dos_date)
 }
 

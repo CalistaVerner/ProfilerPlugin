@@ -4,7 +4,8 @@ use serde_json::Value;
 
 use crate::constants::{ENGINE_THREADING_GATEWAY_ID, TASK_INVOKE_SERVICE_V1};
 
-pub(crate) type CallServiceV1 = extern "C" fn(CapabilityId, MethodName, Blob) -> RResult<Blob, RString>;
+pub(crate) type CallServiceV1 =
+    extern "C" fn(CapabilityId, MethodName, Blob) -> RResult<Blob, RString>;
 
 #[derive(Clone, Copy)]
 pub(crate) struct HostJobScheduler {

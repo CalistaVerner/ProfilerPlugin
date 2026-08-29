@@ -268,4 +268,3 @@ impl ProfilerState {
         format!("profiler-local-{id}")
     }
 }
-

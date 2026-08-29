@@ -31,4 +31,5 @@ pub(crate) const CT_JSON_MERGE_PATCH: &str = "application/merge-patch+json";
 pub(crate) const CONFIG_FORMAT_VERSION: u32 = 1;
 
 pub(crate) static DEFAULT_CONFIG_JSON: &str = include_str!("../assets/default_config.json");
-pub(crate) static SERVICE_DESCRIPTION_JSON: &str = include_str!("../assets/service_description.json");
+pub(crate) static SERVICE_DESCRIPTION_JSON: &str =
+    include_str!("../assets/service_description.json");

@@ -3,11 +3,14 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use serde_json::{json, Value};
 
+use crate::budget_tree::build_work_budget_tree;
 use crate::constants::{
     ENGINE_PROFILER_GATEWAY_ID, PROFILER_PLUGIN_ID, PROFILER_PLUGIN_NAME, PROFILER_SERVICE_ID,
 };
+use crate::population_pressure::build_population_pressure;
 use crate::records::{CategoryStats, JobRecord, ProfilerState};
 use crate::runtime::ProfilerRuntime;
+use crate::streaming_pressure::build_streaming_pressure;
 use crate::util::{duration_ms, unix_ms};
 
 const JSON_TOP_LIMIT: usize = 64;
@@ -247,6 +250,9 @@ impl ProfilerRuntime {
         );
         let frame_budget_violations =
             ranked_frame_budget_violations(&state.completed, JSON_TOP_LIMIT);
+        let budget_pressure_tree = build_work_budget_tree(&state.completed);
+        let streaming_pressure = build_streaming_pressure(&state.completed);
+        let population_pressure = build_population_pressure(&state.completed);
         let profiler_first = json!({
             "scheduled_jobs": scheduled_jobs,
             "blocked_jobs": blocked_jobs,
@@ -309,6 +315,9 @@ impl ProfilerRuntime {
                     "by_source_ranked",
                     "by_method_ranked",
                     "by_lane_ranked",
+                    "streaming_pressure",
+                    "population_pressure",
+                    "budget_pressure_tree",
                     "profiler_first",
                     "budget_violations",
                     "frame_budget_violations",
@@ -321,6 +330,9 @@ impl ProfilerRuntime {
                 "by_owner_ranked": owner_ranked,
                 "by_method_ranked": method_ranked,
                 "by_lane_ranked": lane_ranked,
+                "streaming_pressure": streaming_pressure,
+                "population_pressure": population_pressure,
+                "budget_pressure_tree": budget_pressure_tree,
                 "profiler_first": profiler_first,
                 "top_offenders_by_total_elapsed": offender_ranked,
                 "top_completed_jobs_by_elapsed": top_elapsed_jobs,

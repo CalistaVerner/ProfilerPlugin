@@ -209,33 +209,88 @@ impl Default for ReportConfig {
     }
 }
 
-fn default_true() -> bool { true }
-fn default_service_budget_ms() -> f64 { 8.0 }
-fn default_plugin_lifecycle_budget_ms() -> f64 { 16.67 }
-fn default_custom_budget_ms() -> f64 { 16.67 }
-fn default_slow_job_warn_ms() -> f64 { 16.67 }
-fn default_stale_active_job_ms() -> f64 { 1000.0 }
-fn default_max_recent_jobs() -> usize { 4096 }
-fn default_max_recent_diagnostics() -> usize { 1024 }
-fn default_max_payload_preview_bytes() -> usize { 2048 }
-fn default_flush_job_budget_ms() -> f64 { 250.0 }
-fn default_service_flush_mode() -> String { "engine_jobs".to_owned() }
-fn default_shutdown_flush_mode() -> String { "sync_final".to_owned() }
-fn default_archive_prefix() -> String { "profiler_report".to_owned() }
-fn default_report_directory() -> String { "cache/profiler".to_owned() }
-fn default_latest_json() -> String { "profiler_report_latest.json".to_owned() }
-fn default_latest_markdown() -> String { "profiler_report_latest.md".to_owned() }
+fn default_true() -> bool {
+    true
+}
+fn default_service_budget_ms() -> f64 {
+    8.0
+}
+fn default_plugin_lifecycle_budget_ms() -> f64 {
+    16.67
+}
+fn default_custom_budget_ms() -> f64 {
+    16.67
+}
+fn default_slow_job_warn_ms() -> f64 {
+    16.67
+}
+fn default_stale_active_job_ms() -> f64 {
+    1000.0
+}
+fn default_max_recent_jobs() -> usize {
+    4096
+}
+fn default_max_recent_diagnostics() -> usize {
+    1024
+}
+fn default_max_payload_preview_bytes() -> usize {
+    2048
+}
+fn default_flush_job_budget_ms() -> f64 {
+    250.0
+}
+fn default_service_flush_mode() -> String {
+    "engine_jobs".to_owned()
+}
+fn default_shutdown_flush_mode() -> String {
+    "sync_final".to_owned()
+}
+fn default_archive_prefix() -> String {
+    "profiler_report".to_owned()
+}
+fn default_report_directory() -> String {
+    "cache/profiler".to_owned()
+}
+fn default_latest_json() -> String {
+    "profiler_report_latest.json".to_owned()
+}
+fn default_latest_markdown() -> String {
+    "profiler_report_latest.md".to_owned()
+}
 
-
-fn default_latest_jobs_csv() -> String { "profiler_jobs_latest.csv".to_owned() }
-fn default_latest_categories_csv() -> String { "profiler_categories_latest.csv".to_owned() }
-fn default_latest_sources_csv() -> String { "profiler_sources_latest.csv".to_owned() }
-fn default_latest_offenders_csv() -> String { "profiler_top_offenders_latest.csv".to_owned() }
-fn default_latest_active_csv() -> String { "profiler_active_jobs_latest.csv".to_owned() }
-fn default_latest_diagnostics_csv() -> String { "profiler_diagnostics_latest.csv".to_owned() }
-fn default_latest_timeline_csv() -> String { "profiler_timeline_latest.csv".to_owned() }
-fn default_latest_methods_csv() -> String { "profiler_methods_latest.csv".to_owned() }
-fn default_latest_budget_violations_csv() -> String { "profiler_budget_violations_latest.csv".to_owned() }
-fn default_latest_lanes_csv() -> String { "profiler_lanes_latest.csv".to_owned() }
-fn default_latest_profiler_first_csv() -> String { "profiler_first_latest.csv".to_owned() }
-fn default_latest_frame_budget_csv() -> String { "profiler_frame_budget_latest.csv".to_owned() }
+fn default_latest_jobs_csv() -> String {
+    "profiler_jobs_latest.csv".to_owned()
+}
+fn default_latest_categories_csv() -> String {
+    "profiler_categories_latest.csv".to_owned()
+}
+fn default_latest_sources_csv() -> String {
+    "profiler_sources_latest.csv".to_owned()
+}
+fn default_latest_offenders_csv() -> String {
+    "profiler_top_offenders_latest.csv".to_owned()
+}
+fn default_latest_active_csv() -> String {
+    "profiler_active_jobs_latest.csv".to_owned()
+}
+fn default_latest_diagnostics_csv() -> String {
+    "profiler_diagnostics_latest.csv".to_owned()
+}
+fn default_latest_timeline_csv() -> String {
+    "profiler_timeline_latest.csv".to_owned()
+}
+fn default_latest_methods_csv() -> String {
+    "profiler_methods_latest.csv".to_owned()
+}
+fn default_latest_budget_violations_csv() -> String {
+    "profiler_budget_violations_latest.csv".to_owned()
+}
+fn default_latest_lanes_csv() -> String {
+    "profiler_lanes_latest.csv".to_owned()
+}
+fn default_latest_profiler_first_csv() -> String {
+    "profiler_first_latest.csv".to_owned()
+}
+fn default_latest_frame_budget_csv() -> String {
+    "profiler_frame_budget_latest.csv".to_owned()
+}

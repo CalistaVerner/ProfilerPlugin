@@ -464,22 +464,44 @@ impl ProfilerRuntime {
             name,
             category,
             source,
-            lane: "unspecified".to_owned(),
-            priority: "unspecified".to_owned(),
-            dependency_group: "unspecified".to_owned(),
-            frame_id: None,
+            lane: sanitize_non_empty(value.get("lane").and_then(Value::as_str), "unspecified"),
+            priority: sanitize_non_empty(
+                value.get("priority").and_then(Value::as_str),
+                "unspecified",
+            ),
+            dependency_group: sanitize_non_empty(
+                value.get("dependency_group").and_then(Value::as_str),
+                "unspecified",
+            ),
+            frame_id: value.get("frame_id").and_then(Value::as_u64),
             status: "completed".to_owned(),
             detail,
             scheduled: false,
             blocked: false,
             polling: false,
-            waited_on_gpu: false,
-            stayed_async: false,
-            exceeded_frame_budget: false,
-            frame_budget_ms: None,
-            gpu_wait_ms: None,
-            wait_reason: None,
-            async_mode: None,
+            waited_on_gpu: value
+                .get("gpu_wait_ms")
+                .and_then(Value::as_f64)
+                .is_some_and(|wait| wait > 0.0),
+            stayed_async: value
+                .get("async_mode")
+                .and_then(Value::as_str)
+                .is_some_and(|mode| !mode.trim().is_empty() && mode != "sync"),
+            exceeded_frame_budget: value
+                .get("frame_budget_ms")
+                .and_then(Value::as_f64)
+                .zip(elapsed_ms)
+                .is_some_and(|(budget, elapsed)| budget > 0.0 && elapsed > budget),
+            frame_budget_ms: value.get("frame_budget_ms").and_then(Value::as_f64),
+            gpu_wait_ms: value.get("gpu_wait_ms").and_then(Value::as_f64),
+            wait_reason: value
+                .get("wait_reason")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
+            async_mode: value
+                .get("async_mode")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
             started_unix_ms,
             ended_unix_ms: Some(now),
             elapsed_ms: Some(elapsed_ms.unwrap_or(0.0)),

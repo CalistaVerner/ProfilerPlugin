@@ -3,8 +3,8 @@ use abi_stable::std_types::{RResult, RString, RVec};
 use abi_stable::StableAbi;
 use newengine_plugin_api::{
     ConfigApplyResultV1, ConfigBlobV1, ConfigDiagLevelV1, ConfigDiagV1, ConfigPatchV1,
-    EventSinkV1Dyn, EventSinkV1_TO, HostApiV1, PluginDescriptor,
-    PluginModule, ServiceV1Dyn, ServiceV1_TO,
+    EventSinkV1Dyn, EventSinkV1_TO, HostApiV1, PluginDescriptor, PluginModule, ServiceV1Dyn,
+    ServiceV1_TO,
 };
 use serde_json::Value;
 use std::sync::Arc;
@@ -48,7 +48,8 @@ impl ProfilerPlugin {
             .into_result()
             .map_err(|e| e.to_string())?;
 
-        let sink: EventSinkV1Dyn<'static> = EventSinkV1_TO::from_value(ProfilerEventSink, TD_Opaque);
+        let sink: EventSinkV1Dyn<'static> =
+            EventSinkV1_TO::from_value(ProfilerEventSink, TD_Opaque);
         (host.subscribe_events_v1)(sink)
             .into_result()
             .map_err(|e| e.to_string())?;
@@ -78,7 +79,9 @@ impl ProfilerPlugin {
 }
 
 impl PluginModule for ProfilerPlugin {
-    fn descriptor(&self) -> PluginDescriptor { self.descriptor_impl() }
+    fn descriptor(&self) -> PluginDescriptor {
+        self.descriptor_impl()
+    }
 
     fn config_defaults(&self) -> RResult<ConfigBlobV1, RString> {
         let defaults = match Self::parse_defaults() {
@@ -95,31 +98,47 @@ impl PluginModule for ProfilerPlugin {
         })
     }
 
-    fn config_apply_patches(&self, base: &ConfigBlobV1, patches: RVec<ConfigPatchV1>) -> RResult<ConfigApplyResultV1, RString> {
+    fn config_apply_patches(
+        &self,
+        base: &ConfigBlobV1,
+        patches: RVec<ConfigPatchV1>,
+    ) -> RResult<ConfigApplyResultV1, RString> {
         if base.content_type.as_str() != CT_JSON {
             return RResult::RErr(RString::from("unsupported profiler config content_type"));
         }
         let mut cur = match serde_json::from_slice::<Value>(base.bytes.as_slice()) {
             Ok(v) => v,
-            Err(e) => return RResult::RErr(RString::from(format!("profiler config parse failed: {e}"))),
+            Err(e) => {
+                return RResult::RErr(RString::from(format!("profiler config parse failed: {e}")))
+            }
         };
         let mut diags = RVec::new();
         let mut changed = false;
 
         for patch in patches.iter() {
-            if patch.content_type.as_str() != CT_JSON && patch.content_type.as_str() != CT_JSON_MERGE_PATCH {
+            if patch.content_type.as_str() != CT_JSON
+                && patch.content_type.as_str() != CT_JSON_MERGE_PATCH
+            {
                 return RResult::RErr(RString::from("unsupported profiler patch content_type"));
             }
             let pv = match serde_json::from_slice::<Value>(patch.bytes.as_slice()) {
                 Ok(v) => v,
-                Err(e) => return RResult::RErr(RString::from(format!("profiler patch parse failed: {e}"))),
+                Err(e) => {
+                    return RResult::RErr(RString::from(format!(
+                        "profiler patch parse failed: {e}"
+                    )))
+                }
             };
             cur = merge_patch(cur, &pv);
             changed = true;
         }
 
         if let Err(e) = Self::cfg_from_value(&cur) {
-            diags.push(config_diag(ConfigDiagLevelV1::Error, "invalid_config", e.clone()));
+            diags.push(config_diag(
+                ConfigDiagLevelV1::Error,
+                "invalid_config",
+                e.clone(),
+            ));
             return RResult::RErr(RString::from(e));
         }
 
@@ -139,10 +158,17 @@ impl PluginModule for ProfilerPlugin {
         })
     }
 
-    fn config_supports_live_update(&self) -> bool { false }
+    fn config_supports_live_update(&self) -> bool {
+        false
+    }
 
-    fn config_update_live(&mut self, _effective: &ConfigBlobV1) -> RResult<RVec<ConfigDiagV1>, RString> {
-        RResult::RErr(RString::from("profiler live config update is not supported yet"))
+    fn config_update_live(
+        &mut self,
+        _effective: &ConfigBlobV1,
+    ) -> RResult<RVec<ConfigDiagV1>, RString> {
+        RResult::RErr(RString::from(
+            "profiler live config update is not supported yet",
+        ))
     }
 
     fn init(&mut self, host: HostApiV1, effective: ConfigBlobV1) -> RResult<(), RString> {
@@ -163,15 +189,28 @@ impl PluginModule for ProfilerPlugin {
         }
     }
 
-    fn start(&mut self) -> RResult<(), RString> { RResult::ROk(()) }
-    fn fixed_update(&mut self, _dt: f32) -> RResult<(), RString> { RResult::ROk(()) }
-    fn update(&mut self, _dt: f32) -> RResult<(), RString> { RResult::ROk(()) }
-    fn render(&mut self, _dt: f32) -> RResult<(), RString> { RResult::ROk(()) }
+    fn start(&mut self) -> RResult<(), RString> {
+        RResult::ROk(())
+    }
+    fn fixed_update(&mut self, _dt: f32) -> RResult<(), RString> {
+        RResult::ROk(())
+    }
+    fn update(&mut self, _dt: f32) -> RResult<(), RString> {
+        RResult::ROk(())
+    }
+    fn render(&mut self, _dt: f32) -> RResult<(), RString> {
+        RResult::ROk(())
+    }
 
     fn shutdown(&mut self) {
         if let Some(rt) = RUNTIME.get() {
             if rt.cfg.report.write_on_shutdown {
-                if rt.cfg.scheduling.shutdown_flush_mode.eq_ignore_ascii_case("engine_jobs") {
+                if rt
+                    .cfg
+                    .scheduling
+                    .shutdown_flush_mode
+                    .eq_ignore_ascii_case("engine_jobs")
+                {
                     let _ = rt.flush_report_async("plugin.shutdown");
                 } else {
                     let _ = rt.flush_report("plugin.shutdown");
@@ -181,4 +220,3 @@ impl PluginModule for ProfilerPlugin {
         self.initialized = false;
     }
 }
-

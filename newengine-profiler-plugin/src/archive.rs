@@ -15,12 +15,19 @@ struct CentralDirectoryRecord {
     local_header_offset: u32,
 }
 
-pub(crate) fn write_stored_zip(path: &Path, created_unix_ms: u128, entries: &[ZipFileEntry<'_>]) -> Result<(), String> {
+pub(crate) fn write_stored_zip(
+    path: &Path,
+    created_unix_ms: u128,
+    entries: &[ZipFileEntry<'_>],
+) -> Result<(), String> {
     if entries.is_empty() {
         return Err("zip archive requires at least one entry".to_owned());
     }
     if entries.len() > u16::MAX as usize {
-        return Err(format!("zip archive has too many entries: {}", entries.len()));
+        return Err(format!(
+            "zip archive has too many entries: {}",
+            entries.len()
+        ));
     }
 
     if let Some(parent) = path.parent() {
@@ -95,7 +102,11 @@ pub(crate) fn write_stored_zip(path: &Path, created_unix_ms: u128, entries: &[Zi
             .map_err(|e| format!("write central directory record failed: {e}"))?;
 
         offset = checked_add_u64(offset, 46, "zip central directory header")?;
-        offset = checked_add_u64(offset, record.name.len() as u64, "zip central directory name")?;
+        offset = checked_add_u64(
+            offset,
+            record.name.len() as u64,
+            "zip central directory name",
+        )?;
     }
 
     let central_dir_size = checked_u32_from_u64(
@@ -112,7 +123,8 @@ pub(crate) fn write_stored_zip(path: &Path, created_unix_ms: u128, entries: &[Zi
     write_u32(&mut file, central_dir_size)?;
     write_u32(&mut file, central_dir_offset)?;
     write_u16(&mut file, 0)?;
-    file.flush().map_err(|e| format!("flush archive '{}' failed: {e}", path.display()))
+    file.flush()
+        .map_err(|e| format!("flush archive '{}' failed: {e}", path.display()))
 }
 
 fn normalize_zip_entry_name(name: &str) -> Result<String, String> {
@@ -120,7 +132,12 @@ fn normalize_zip_entry_name(name: &str) -> Result<String, String> {
     if normalized.is_empty() {
         return Err("zip entry name cannot be empty".to_owned());
     }
-    if normalized.starts_with('/') || normalized.contains(':') || normalized.split('/').any(|part| part.is_empty() || part == "." || part == "..") {
+    if normalized.starts_with('/')
+        || normalized.contains(':')
+        || normalized
+            .split('/')
+            .any(|part| part.is_empty() || part == "." || part == "..")
+    {
         return Err(format!("unsafe zip entry name: {name}"));
     }
     Ok(normalized)
@@ -139,11 +156,13 @@ fn crc32_ieee(bytes: &[u8]) -> u32 {
 }
 
 fn write_u16(file: &mut std::fs::File, value: u16) -> Result<(), String> {
-    file.write_all(&value.to_le_bytes()).map_err(|e| e.to_string())
+    file.write_all(&value.to_le_bytes())
+        .map_err(|e| e.to_string())
 }
 
 fn write_u32(file: &mut std::fs::File, value: u32) -> Result<(), String> {
-    file.write_all(&value.to_le_bytes()).map_err(|e| e.to_string())
+    file.write_all(&value.to_le_bytes())
+        .map_err(|e| e.to_string())
 }
 
 fn checked_u32(value: usize, what: &str) -> Result<u32, String> {
@@ -155,5 +174,6 @@ fn checked_u32_from_u64(value: u64, what: &str) -> Result<u32, String> {
 }
 
 fn checked_add_u64(a: u64, b: u64, what: &str) -> Result<u64, String> {
-    a.checked_add(b).ok_or_else(|| format!("{what} overflow while writing ZIP archive"))
+    a.checked_add(b)
+        .ok_or_else(|| format!("{what} overflow while writing ZIP archive"))
 }

@@ -3,14 +3,17 @@
 #![allow(non_local_definitions)]
 
 mod archive;
+mod budget_tree;
 mod config;
 mod constants;
 mod plugin;
+mod population_pressure;
 mod records;
 mod report;
 mod runtime;
 mod scheduler;
 mod service;
+mod streaming_pressure;
 mod util;
 
 use abi_stable::sabi_trait::TD_Opaque;
@@ -29,7 +32,6 @@ export_plugin_root!(create_module, ui_assets_v1);
 extern "C" fn create_module() -> PluginModuleDyn<'static> {
     PluginModule_TO::from_value(ProfilerPlugin::default(), TD_Opaque)
 }
-
 
 extern "C" fn ui_assets_v1() -> PluginUiAssetsV1 {
     PluginUiAssetsV1::empty()
