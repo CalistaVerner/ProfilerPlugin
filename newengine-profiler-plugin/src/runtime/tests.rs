@@ -86,3 +86,39 @@ fn completed_ring_preserves_slow_outlier_under_healthy_flood() {
     assert_eq!(state.completed.len(), 3);
     assert!(state.completed.iter().any(|job| job.id == "slow"));
 }
+
+#[test]
+fn late_plugin_load_terminal_synthesizes_parent_and_breakdown_parts() {
+    let runtime = ProfilerRuntime::new(ProfilerConfig::default(), None);
+    let mut state = ProfilerState::new();
+
+    runtime
+        .record_end_value_locked(
+            &mut state,
+            json!({
+                "id": "host.plugin_load.3",
+                "status": "completed",
+                "detail": "plugin loaded in 246 ms",
+                "metadata": {
+                    "operation": "load_one",
+                    "path": "typeScriptScriptEngine.dll",
+                    "total_ms": 246.0,
+                    "breakdown": "dlopen=1ms discovery_verify=239ms init_total=4ms unattributed=2ms"
+                }
+            }),
+        )
+        .expect("late plugin terminal must be recoverable from rich metadata");
+
+    assert!(state
+        .completed
+        .iter()
+        .any(|job| job.id == "host.plugin_load.3" && job.elapsed_ms == Some(246.0)));
+    assert!(state
+        .completed
+        .iter()
+        .any(|job| { job.name.ends_with("/discovery_verify") && job.elapsed_ms == Some(239.0) }));
+    assert!(!state
+        .diagnostics
+        .iter()
+        .any(|diag| diag.code == "job_end_without_begin"));
+}

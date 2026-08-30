@@ -107,7 +107,11 @@ impl ProfilerRuntime {
             if let Some(record) =
                 self.synthesize_plugin_load_terminal_without_begin(&id, &wire, value.clone())
             {
+                let breakdown_parts = self.build_breakdown_part_records(&record);
                 self.complete_job_locked(state, record);
+                for part in breakdown_parts {
+                    self.complete_job_locked(state, part);
+                }
                 return Ok(());
             }
             Self::push_diag_locked(
@@ -163,7 +167,11 @@ impl ProfilerRuntime {
         active.record.async_mode = wire.async_mode.or_else(|| active.record.async_mode.clone());
         refresh_record_classification(&mut active.record);
 
+        let breakdown_parts = self.build_breakdown_part_records(&active.record);
         self.complete_job_locked(state, active.record);
+        for part in breakdown_parts {
+            self.complete_job_locked(state, part);
+        }
         Ok(())
     }
 
