@@ -122,3 +122,38 @@ fn late_plugin_load_terminal_synthesizes_parent_and_breakdown_parts() {
         .iter()
         .any(|diag| diag.code == "job_end_without_begin"));
 }
+
+#[test]
+fn breakdown_parts_keep_compact_parent_identity_without_cloning_source_event() {
+    let runtime = ProfilerRuntime::new(ProfilerConfig::default(), None);
+    let mut state = ProfilerState::new();
+    runtime.record_custom_event_locked(
+        &mut state,
+        "newengine.diagnostics.profiler.sample.v1",
+        json!({
+            "schema": "newengine.diagnostics.profiler.sample.v1",
+            "category": "render",
+            "source": "render_controller",
+            "name": "render cpu profile",
+            "frame_id": 77,
+            "elapsed_ms": 12.0,
+            "budget_ms": 16.67,
+            "breakdown": "feature_extract=5ms submit=7ms",
+            "large_debug_payload": "x".repeat(4096),
+        }),
+    );
+
+    let child = state
+        .completed
+        .iter()
+        .find(|job| job.category == "render.breakdown")
+        .expect("breakdown child must be retained");
+    assert!(child.metadata.get("source_event").is_none());
+    assert_eq!(child.metadata.get("parent_category").and_then(Value::as_str), Some("render"));
+    assert_eq!(
+        child.metadata.get("parent_source").and_then(Value::as_str),
+        Some("render_controller")
+    );
+    assert_eq!(child.metadata.get("parent_frame_id").and_then(Value::as_u64), Some(77));
+    assert!(child.metadata.get("large_debug_payload").is_none());
+}

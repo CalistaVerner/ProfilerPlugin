@@ -1,5 +1,10 @@
 use super::*;
 
+// Event delivery is synchronous with engine producer threads. Retention work must stay bounded
+// independently of diagnostics.max_recent_jobs; a full profiler ring must never turn one frame
+// sample into an O(N) scan of thousands of historical records.
+const COMPLETED_EVICTION_SCAN_LIMIT: usize = 32;
+
 impl ProfilerRuntime {
     pub(crate) fn record_begin_value(&self, payload: &[u8]) -> Result<Value, String> {
         let value = serde_json::from_slice::<Value>(payload).map_err(|e| e.to_string())?;
@@ -554,9 +559,11 @@ impl ProfilerRuntime {
                 "schema": "newengine.profiler.breakdown_part.v1",
                 "parent_id": parent.id.clone(),
                 "parent_name": parent.name.clone(),
+                "parent_category": parent.category.clone(),
+                "parent_source": parent.source.clone(),
+                "parent_frame_id": parent.frame_id,
                 "part": part_name.clone(),
                 "elapsed_ms": elapsed_ms,
-                "source_event": parent.metadata.clone(),
             });
             trim_payload_preview(
                 &mut metadata,
@@ -645,14 +652,20 @@ impl ProfilerRuntime {
 
         state.completed.push_back(record);
         while state.completed.len() > self.cfg.diagnostics.max_recent_jobs {
-            // Preserve rare stalls/failures when the bounded ring is flooded by
-            // thousands of healthy simulation samples. Prefer evicting the oldest
-            // ordinary record; only evict an outlier if the entire ring consists of
-            // significant records. This keeps micro-freezes visible in the final report
-            // without increasing the configured memory bound.
-            if let Some(index) = state.completed.iter().position(|job| {
-                !is_significant_completed_job(job, self.cfg.diagnostics.slow_job_warn_ms)
-            }) {
+            // Preserve nearby slow/failure records under a healthy flood without ever scanning
+            // the entire configured ring on the producer thread. The old unbounded position()
+            // walk became O(max_recent_jobs) once the 4096-entry ring filled; render breakdown
+            // events can append many records per frame, turning profiler retention itself into a
+            // persistent frame-time cliff. Restrict priority eviction to a small oldest window.
+            // If that window is entirely significant, retire the oldest record deterministically.
+            let ordinary_index = state
+                .completed
+                .iter()
+                .take(COMPLETED_EVICTION_SCAN_LIMIT)
+                .position(|job| {
+                    !is_significant_completed_job(job, self.cfg.diagnostics.slow_job_warn_ms)
+                });
+            if let Some(index) = ordinary_index {
                 let _ = state.completed.remove(index);
             } else {
                 state.completed.pop_front();
